@@ -1,0 +1,74 @@
+{% extends "index.html" %}
+{% load staticfiles %}
+{% load url from future %}
+
+{% block breadcrumbs %}
+	<li><a href="/inicio/index"><i class="icon-home"></i> Dashboard</a></li>
+    <li class="active">Carga de Ordenes de Compra</li>
+{% endblock breadcrumbs %}
+
+
+{% block contenido %}
+<div class="row-fluid">
+    <div class="dgtic-panel">
+        <div class="dgtic-message-fixed warning" id="barFile">
+            <fieldset>
+                <strong style="font-size:16px;">File:</strong>
+                <input type="file" id="fileSelect" accept=".xlsx, .xls"><br>
+                <strong style="font-size:16px;">Indique la ruta del archivo (ejemplo-> c:/test/):</strong>
+                <input type="text" id="txtpath" style="width: 500px;" >
+                <button id="btnProcess" onclick="processFile();" style="width: 100px;">Aplicar</button>
+            </fieldset>                                   
+        </div>
+    </div>
+</div>
+
+<div style="overflow-x:auto;">
+    <table id="grdOC" class="stripe hovers cell-border"></table>
+</div>
+
+{% endblock contenido %}
+
+{% block jquery %}
+
+$(document).ready(function() {
+    
+  
+});
+// Fin Document Ready
+
+function processFile() {
+    var sender = document.getElementById('fileSelect');
+    if (sender.value == ""){alert('Falta seleccionar el archivo.'); return false;}
+    if ($("#txtpath").val() == ""){alert('Falta indicar la ruta del directorio del archivo.'); return false;}
+    readFileOC(sender);
+}
+
+function readFileOC(file) {
+    $("#btnProcess").attr("disabled", "disabled");
+    $(document.body).css({'cursor' : 'wait'});
+    $.ajax({
+        url: "/readOC/",
+        type: "POST",
+        data: { 'path': $("#txtpath").val(), 'name': file.files[0].name},
+        success: function (data) {
+            if(data.error){
+              alert(data.error);
+            }else{
+                $("#grdOC").append("<thead><tr><th hidden>id OC_det</th><th hidden>id OC</th><th>Sub Inventario</th><th>PDV</th><th>Producto</th><th>Cantidad Req.</th></tr></thead>");
+                $.each(data, function(i, row){
+                $("#grdOC").append("<tr><td hidden>" + row['idOC_det'] + "</td><td hidden>" + row['idOC'] + "</td><td>" + row['sub_inventario'] + "</td><td>" + row['pdv'] + "</td><td>" + row['id_articulo'] + "</td><td align='center'>" + row['cantidad'] + "</td></tr>");
+                });
+                alert('Ready');
+            }
+            $(document.body).css({ 'cursor': 'default' });
+            $("#btnProcess").removeAttr("disabled");         
+
+        }
+    });
+
+   
+}
+     
+
+{% endblock jquery %}

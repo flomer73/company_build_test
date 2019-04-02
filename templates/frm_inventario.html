@@ -1,0 +1,60 @@
+{% extends "index.html" %}
+{% load staticfiles %}
+{% load url from future %}
+
+{% block breadcrumbs %}
+	<li><a href="/inicio/index"><i class="icon-home"></i> Dashboard</a></li>
+    <li class="active">Carga de Ordenes de Compra</li>
+{% endblock breadcrumbs %}
+
+
+{% block contenido %}
+<div class="row-fluid">
+    <div class="dgtic-panel">
+        <div class="dgtic-message-fixed warning">
+            <strong style="font-size:16px;">Filtro:</strong>
+            <select style="width: 500px;" id="cmbSel">
+                <option value='0'>Seleccione un almacén</option>
+                {% for Almacen in dbAlmacenes %}
+                    <option value='{{Almacen.id}}'>{{Almacen.sub_inventario}} - {{Almacen.pdv}}</option>
+                {% endfor %}
+            </select>                                   
+        </div>
+        <br>
+        <div style="overflow-x:auto;">
+            <table id="example" class="stripe hovers cell-border">
+                
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock contenido %}
+
+{% block jquery %}
+
+$(document).ready(function() {
+    
+    $("#cmbSel").change(function(){
+        if ($("#cmbSel").val() == 0){alert('Almacen invalido.'); return false;}
+        $.ajax({
+            url: "/alma_inv/",
+            type: "POST",
+            data: { 'id_almacen': $("#cmbSel").val()},
+            success: function (data) {
+                $("#example").empty();
+                $("#example").append('<thead><tr><th width="200px">Producto</th><th width="100px">Existencia</th></tr></thead>');
+                $.each(data, function(i, row){
+                $("#example").append('<tr><td>' + row['articulo'] + '</td><td align="center">' + row['existencia'] + '</td></tr>');
+                });
+                
+            }
+        });
+
+    }); 
+  
+});
+// Fin Document Ready
+
+
+{% endblock jquery %}

@@ -1,0 +1,10 @@
+
+Descomprimir el zip static.rar a nivel de manage.py
+
+Base de Datos utilizada: pgAdmin III - postgreSQL 9.3
+
+Como extra:
+ Seria interesante tambien agregar un modulo de venta de 
+ productos para reducir el inventario.
+
+ Una seccion de indicadores de informacion de los procesos.

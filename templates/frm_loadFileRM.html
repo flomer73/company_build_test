@@ -1,0 +1,116 @@
+{% extends "index.html" %}
+{% load staticfiles %}
+{% load url from future %}
+
+{% block breadcrumbs %}
+	<li><a href="/inicio/index"><i class="icon-home"></i> Dashboard</a></li>
+    <li class="active">Carga de Ordenes de Compra</li>
+{% endblock breadcrumbs %}
+
+
+{% block contenido %}
+
+<div style="overflow-x:auto;">
+    <div class="dgtic-message-fixed warning">
+        
+            <strong style="font-size:16px;">Ordenes de compra sin recepcion de mercancia</strong>
+       
+    </div>  
+    <table id="example" class="stripe hovers cell-border">
+        <thead>
+            <tr>
+                <th hidden>id OC_det</th>
+                <th hidden>id OC</th>
+                <th>Sub Inventario</th>
+                <th>PDV</th>
+                <th>Producto</th>
+                <th>Cantidad Req.</th>
+                <th width="100px">Recibir</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for Orden in dbOrdenes_det %}
+                <tr>
+                    <td hidden>{{Orden.id}}</td>
+                    <td hidden>{{Orden.id_sub_inventario_id}}</td>
+                    <td>{{Orden.id_sub_inventario.sub_inventario}}</td>
+                    <td>{{Orden.id_sub_inventario.pdv}}</td>
+                    <td>{{Orden.id_articulo.referencia}}</td>
+                    <td align="center">{{Orden.cantidad}}</td>
+                    <td align="center"><a href="javascript:load_modal_logistica({{Orden.id}}, '{{Orden.id_sub_inventario.sub_inventario}}', '{{Orden.id_articulo.referencia}}');"><i class="icon-download"></i></a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div id="openModal" class="modalDialog" style="display: none;">
+    <div style="width:50%;">
+        <a href="#close" title="Cerrar" class="close-img" data-modal-ver="On"><i class="icol-cross"></i></a><br>
+        <strong style="font-size:16px;">File:</strong>
+        <input type="file" id="fileSelect" accept=".xlsx, .xls"><br><br>
+        <strong style="font-size:16px;">Indique la ruta del archivo (ejemplo-> c:/test/):</strong>
+        <input type="text" id="txtpath" style="width: 500px;" >
+        <button id="btnProcess" class="aplica-logistica" onclick="processFile();" data-reg="0" style="width: 150px;">Aplicar</button>
+        <input id="set_ord_det_id" type="hidden" value="">
+        <input id="set_id_almacen" type="hidden" value="">
+        <input id="set_nameProducto" type="hidden" value="">
+    </div>
+</div>
+
+{% endblock contenido %}
+
+{% block jquery %}
+
+$("#openModal").show();
+
+function load_modal_logistica(ord_det_id, id_almacen, nameProducto) {
+    $("#openModal").show();
+    if ( $('.close-img').attr('data-modal-ver') == 'On' ) {
+        $("#txtpath").val('');
+        $("#fileSelect").val('');
+        $("#set_ord_det_id").val(ord_det_id);
+        $("#set_id_almacen").val(id_almacen);
+        $("#set_nameProducto").val(nameProducto);
+        window.location.href = '#openModal';
+    }
+}
+
+$(document).ready(function() {
+    
+  
+});
+// Fin Document Ready
+
+function processFile() {
+    var sender = document.getElementById('fileSelect');
+    if (sender.value == ""){alert('Falta seleccionar el archivo.'); return false;}
+    if ($("#txtpath").val() == ""){alert('Falta indicar la ruta del directorio del archivo.'); return false;}
+    readFileRM(sender);
+}
+
+function readFileRM(file) {
+    $("#btnProcess").attr("disabled", "disabled");
+    $(document.body).css({'cursor' : 'wait'});
+    $.ajax({
+        url: "/readRM/",
+        type: "POST",
+        data: {'set_ord_det_id': $("#set_ord_det_id").val(), 'set_id_almacen': $("#set_id_almacen").val(), 'set_nameProducto': $("#set_nameProducto").val(), 'path': $("#txtpath").val(), 'name': file.files[0].name},
+        success: function (data) {
+            if(data.error){
+              alert(data.error);
+            }else{
+                alert('Ready');
+                $("#openModal").hide();
+            }
+            $(document.body).css({ 'cursor': 'default' });
+            $("#btnProcess").removeAttr("disabled");
+            window.location.href = '/loadRM/';  
+
+        }
+    });
+   
+}
+     
+
+{% endblock jquery %}

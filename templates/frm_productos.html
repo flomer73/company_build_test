@@ -1,0 +1,67 @@
+{% extends "index.html" %}
+{% load staticfiles %}
+{% load url from future %}
+
+{% block breadcrumbs %}
+	<li><a href="/inicio/index"><i class="icon-home"></i> Dashboard</a></li>
+    <li class="active">Carga de Ordenes de Compra</li>
+{% endblock breadcrumbs %}
+
+
+{% block contenido %}
+<div class="row-fluid">
+    <div class="dgtic-panel">
+        <div class="dgtic-message-fixed warning">
+            <fieldset>
+                <strong style="font-size:16px;">Nombre del Producto:</strong>
+                <input type="text" id="txtReferencia">
+                <button id="btnProcess" style="width: 100px;">Guardar</button>
+            </fieldset>                                   
+        </div>
+        <br>
+        <div style="overflow-x:auto;">
+            <table id="example" class="stripe hovers cell-border">
+                <thead>
+                    <tr>
+                        <th>Productos</th> 
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for Articulo in dbArticulos %}
+                        <tr>
+                            <td  data-reg="{{Articulo.id}}">{{Articulo.referencia}}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock contenido %}
+
+{% block jquery %}
+
+$(document).ready(function() {
+    
+    $("#btnProcess").click(function(){
+        $.ajax({
+            url: "/saveProd/",
+            type: "POST",
+            data: { 'referencia': $("#txtReferencia").val()},
+            success: function (data) {
+                if (data.estatus == 'NUEVO'){
+                    $("#example").append('<tr><td data-reg=' + data.id + '>' + $("#txtReferencia").val() + '</td></tr>');
+                    alert('Producto agregado satisfactoriamente.');
+                    $("#txtReferencia").val('');
+                } else {alert('Este producto ya existe.');}
+            }
+        });
+
+    }); 
+  
+});
+// Fin Document Ready
+
+
+{% endblock jquery %}
